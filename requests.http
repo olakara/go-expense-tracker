@@ -4,7 +4,8 @@ Content-Type: application/json
 
 {    
     "description": "Candy for kids",
-    "amount": 4.00
+    "amount": 4.00,
+    "date": "2023-12-25T12:00:00Z"
 }
 
 
@@ -20,7 +21,8 @@ Content-Type: application/json
 
 {
    "description": "Candy for kids",
-    "amount": 4.75
+   "amount": 4.75,
+   "date": "2023-12-25T12:00:00Z"
 }
 
 ### Delete a specific expenditures by ID

@@ -20,7 +20,7 @@ func NewMemoryService(logger *slog.Logger) *MemoryService {
 }
 
 func (m *MemoryService) AddExpenditure(expenditure *domain.Expenditure) error {
-	m.logger.Debug("Adding expenditure", "id", expenditure.ID, "description", expenditure.Description, "amount", expenditure.Amount)
+	m.logger.Debug("Adding expenditure", "id", expenditure.ID, "description", expenditure.Description, "amount", expenditure.Amount, "date", expenditure.Date)
 
 	m.Lock()
 	defer m.Unlock()
@@ -47,7 +47,7 @@ func (m *MemoryService) GetExpenditureByID(id string) (*domain.Expenditure, erro
 		return nil, domain.ErrExpenditureNotFound
 	}
 
-	m.logger.Debug("Found expenditure", "id", id, "description", expenditure.Description, "amount", expenditure.Amount)
+	m.logger.Debug("Found expenditure", "id", id, "description", expenditure.Description, "amount", expenditure.Amount, "date", expenditure.Date)
 	return expenditure, nil
 }
 
@@ -67,7 +67,7 @@ func (m *MemoryService) GetAllExpenditures() ([]*domain.Expenditure, error) {
 }
 
 func (m *MemoryService) UpdateExpenditure(expenditure *domain.Expenditure) error {
-	m.logger.Debug("Updating expenditure", "id", expenditure.ID, "description", expenditure.Description, "amount", expenditure.Amount)
+	m.logger.Debug("Updating expenditure", "id", expenditure.ID, "description", expenditure.Description, "amount", expenditure.Amount, "date", expenditure.Date)
 
 	m.Lock()
 	defer m.Unlock()

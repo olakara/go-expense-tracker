@@ -20,8 +20,9 @@ type ExpenditureHandler struct {
 }
 
 type ExpenditureRequest struct {
-	Description string  `json:"description"`
-	Amount      float64 `json:"amount"`
+	Description string    `json:"description"`
+	Amount      float64   `json:"amount"`
+	Date        time.Time `json:"date"`
 }
 
 func NewExpenditureHandler(service *services.MemoryService, logger *slog.Logger) *ExpenditureHandler {
@@ -48,11 +49,11 @@ func (h *ExpenditureHandler) AddExpenditure(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	h.logger.Debug("Decoded expenditure request", "description", req.Description, "amount", req.Amount)
+	h.logger.Debug("Decoded expenditure request", "description", req.Description, "amount", req.Amount, "date", req.Date)
 
-	expenditure, err := domain.NewExpenditure(req.Description, req.Amount)
+	expenditure, err := domain.NewExpenditure(req.Description, req.Amount, req.Date)
 	if err != nil {
-		h.logger.Error("Failed to create expenditure", "error", err, "description", req.Description, "amount", req.Amount)
+		h.logger.Error("Failed to create expenditure", "error", err, "description", req.Description, "amount", req.Amount, "date", req.Date)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -64,7 +65,7 @@ func (h *ExpenditureHandler) AddExpenditure(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	h.logger.Info("Successfully added expenditure", "id", expenditure.ID, "description", expenditure.Description)
+	h.logger.Info("Successfully added expenditure", "id", expenditure.ID, "description", expenditure.Description, "date", expenditure.Date)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(expenditure)
@@ -115,7 +116,7 @@ func (h *ExpenditureHandler) GetExpenditureByID(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	h.logger.Info("Successfully retrieved expenditure", "id", id, "description", expenditure.Description)
+	h.logger.Info("Successfully retrieved expenditure", "id", id, "description", expenditure.Description, "date", expenditure.Date)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(expenditure)
 }
@@ -152,7 +153,7 @@ func (h *ExpenditureHandler) UpdateExpenditure(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	h.logger.Debug("Decoded update request", "id", id, "description", req.Description, "amount", req.Amount)
+	h.logger.Debug("Decoded update request", "id", id, "description", req.Description, "amount", req.Amount, "date", req.Date)
 
 	if req.Description == "" {
 		h.logger.Warn("Empty description in update request", "id", id)
@@ -163,6 +164,13 @@ func (h *ExpenditureHandler) UpdateExpenditure(w http.ResponseWriter, r *http.Re
 	if req.Amount <= 0 {
 		h.logger.Warn("Invalid amount in update request", "id", id, "amount", req.Amount)
 		http.Error(w, domain.ErrInvalidExpenditureAmount.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Check if the date is in the future
+	if req.Date.After(time.Now()) {
+		h.logger.Warn("Future date in update request", "id", id, "date", req.Date)
+		http.Error(w, domain.ErrExpenditureFutureDate.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -177,6 +185,7 @@ func (h *ExpenditureHandler) UpdateExpenditure(w http.ResponseWriter, r *http.Re
 		ID:          parsedUUID,
 		Description: req.Description,
 		Amount:      req.Amount,
+		Date:        req.Date,
 	}
 
 	err = h.service.UpdateExpenditure(expenditure)
@@ -186,7 +195,7 @@ func (h *ExpenditureHandler) UpdateExpenditure(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	h.logger.Info("Successfully updated expenditure", "id", id, "description", expenditure.Description)
+	h.logger.Info("Successfully updated expenditure", "id", id, "description", expenditure.Description, "date", expenditure.Date)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(expenditure)
 }
