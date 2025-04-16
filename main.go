@@ -2,20 +2,23 @@
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"go-expense-tracker/domain"
 	"go-expense-tracker/services"
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 )
 
 type ExpenditureHandler struct {
-	service *services.MemoryService
+	service domain.ExpenditureRepository
 	logger  *slog.Logger
 }
 
@@ -25,7 +28,7 @@ type ExpenditureRequest struct {
 	Date        time.Time `json:"date"`
 }
 
-func NewExpenditureHandler(service *services.MemoryService, logger *slog.Logger) *ExpenditureHandler {
+func NewExpenditureHandler(service domain.ExpenditureRepository, logger *slog.Logger) *ExpenditureHandler {
 	return &ExpenditureHandler{
 		service: service,
 		logger:  logger,
@@ -306,6 +309,15 @@ func (rw *ResponseWriter) WriteHeader(code int) {
 func main() {
 	port := 8080
 
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		fmt.Printf("Warning: Error loading .env file: %v\n", err)
+	}
+
+	// Parse command line flags
+	useDB := flag.Bool("db", false, "Use PostgreSQL database instead of in-memory storage")
+	flag.Parse()
+
 	// Configure structured logger
 	logHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelDebug,
@@ -315,8 +327,62 @@ func main() {
 
 	logger.Info("Starting expense tracker application")
 
-	// Initialize the service with logger
-	service := services.NewMemoryService(logger)
+	// Initialize the appropriate service
+	var service domain.ExpenditureRepository
+	var err error
+
+	if *useDB {
+		// Get database parameters from environment variables
+		dbHost := os.Getenv("DB_HOST")
+		if dbHost == "" {
+			dbHost = "localhost" // Default value
+		}
+
+		dbPortStr := os.Getenv("DB_PORT")
+		dbPort := 5432 // Default value
+		if dbPortStr != "" {
+			var err error
+			dbPort, err = strconv.Atoi(dbPortStr)
+			if err != nil {
+				logger.Error("Invalid DB_PORT value", "error", err, "value", dbPortStr)
+				os.Exit(1)
+			}
+		}
+
+		dbUser := os.Getenv("DB_USER")
+		if dbUser == "" {
+			dbUser = "postgres" // Default value
+		}
+
+		dbPassword := os.Getenv("DB_PASSWORD")
+		if dbPassword == "" {
+			dbPassword = "postgres" // Default value
+		}
+
+		dbName := os.Getenv("DB_NAME")
+		if dbName == "" {
+			dbName = "expense_tracker" // Default value
+		}
+
+		logger.Info("Using PostgreSQL database for storage", 
+			"host", dbHost, 
+			"port", dbPort, 
+			"user", dbUser, 
+			"database", dbName)
+
+		dbService, err := services.NewDBService(dbHost, dbPort, dbUser, dbPassword, dbName, logger)
+		if err != nil {
+			logger.Error("Failed to initialize database service", "error", err)
+			os.Exit(1)
+		}
+		defer dbService.Close()
+
+		service = dbService
+	} else {
+		logger.Info("Using in-memory storage")
+		service = services.NewMemoryService(logger)
+	}
+
 	handler := NewExpenditureHandler(service, logger)
 
 	// Set up the routes
@@ -331,7 +397,7 @@ func main() {
 	// Start the server
 	serverAddr := fmt.Sprintf(":%d", port)
 	logger.Info("Starting HTTP server", "address", serverAddr)
-	err := http.ListenAndServe(serverAddr, nil)
+	err = http.ListenAndServe(serverAddr, nil)
 	if err != nil {
 		logger.Error("Server failed to start", "error", err)
 		os.Exit(1)
