@@ -1,0 +1,27 @@
+### Create a new expenditure
+POST http://localhost:8080/expenditures
+Content-Type: application/json
+
+{    
+    "description": "Candy for kids",
+    "amount": 4.00
+}
+
+
+### Retrieve all expenditures
+GET http://localhost:8080/expenditures
+
+### Retrieve a specific expenditure by ID
+GET http://localhost:8080/expenditures/9d523af2-a92f-4805-b0f0-997bcc5ac471
+
+### Update a specific expenditure by ID
+PUT http://localhost:8080/expenditures/9d523af2-a92f-4805-b0f0-997bcc5ac471
+Content-Type: application/json
+
+{
+   "description": "Candy for kids",
+    "amount": 4.75
+}
+
+### Delete a specific expenditures by ID
+DELETE http://localhost:8080/expenditures/e75d4f83-b1ca-409a-a690-fda1c3a0ec83
