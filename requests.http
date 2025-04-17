@@ -3,9 +3,9 @@ POST http://localhost:8080/expenditures
 Content-Type: application/json
 
 {    
-    "description": "Candy for kids",
-    "amount": 4.00,
-    "date": "2023-12-25T12:00:00Z"
+    "description": "Groceries",
+    "amount": 76.00,
+    "date": "2025-04-15T12:00:00Z"
 }
 
 
@@ -26,4 +26,4 @@ Content-Type: application/json
 }
 
 ### Delete a specific expenditures by ID
-DELETE http://localhost:8080/expenditures/e75d4f83-b1ca-409a-a690-fda1c3a0ec83
+DELETE http://localhost:8080/expenditures/812484df-af37-4414-bb33-4a316a2d4bbf
