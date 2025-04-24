@@ -2,10 +2,10 @@
 POST http://localhost:8080/expenditures
 Content-Type: application/json
 
-{    
-    "description": "Groceries",
-    "amount": 76.00,
-    "date": "2025-04-15T12:00:00Z"
+{
+  "description": "EIG LPG Payment",
+  "amount": 55.44,
+  "date": "2025-04-24T08:38:13Z"
 }
 
 
@@ -16,14 +16,14 @@ GET http://localhost:8080/expenditures
 GET http://localhost:8080/expenditures/9d523af2-a92f-4805-b0f0-997bcc5ac471
 
 ### Update a specific expenditure by ID
-PUT http://localhost:8080/expenditures/9d523af2-a92f-4805-b0f0-997bcc5ac471
+PUT http://localhost:8080/expenditures/6c30be53-eb5c-4b0e-b092-a35c437ad7c3
 Content-Type: application/json
 
 {
-   "description": "Candy for kids",
-   "amount": 4.75,
-   "date": "2023-12-25T12:00:00Z"
+   "description": "One Run Registration",
+   "amount": 124.70,
+   "date": "2025-04-21T11:47:16Z"
 }
 
 ### Delete a specific expenditures by ID
-DELETE http://localhost:8080/expenditures/812484df-af37-4414-bb33-4a316a2d4bbf
+DELETE http://localhost:8080/expenditures/ae2a31df-26cb-4c13-8220-113db81da7b2
