@@ -13,8 +13,9 @@ type ExpenditureRepository interface {
 	DeleteExpenditure(id string) error
 }
 
+var ErrCategoryNotFound = errors.New("category not found")
+
 type CategoryRepository interface {
 	GetCategoryByID(id string) (*Category, error)
 	GetAllCategories() ([]*Category, error)
-	UpdateCategory(category *Category) error
 }
