@@ -1,4 +1,4 @@
-﻿package domain
+package domain
 
 import "errors"
 
@@ -11,4 +11,10 @@ type ExpenditureRepository interface {
 	GetAllExpenditures() ([]*Expenditure, error)
 	UpdateExpenditure(expenditure *Expenditure) error
 	DeleteExpenditure(id string) error
+}
+
+type CategoryRepository interface {
+	GetCategoryByID(id string) (*Category, error)
+	GetAllCategories() ([]*Category, error)
+	UpdateCategory(category *Category) error
 }
